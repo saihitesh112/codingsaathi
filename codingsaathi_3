@@ -1,0 +1,149 @@
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+class Transaction {
+private:
+    string type;
+    double amount;
+
+public:
+    Transaction(string type, double amount) {
+        this->type = type;
+        this->amount = amount;
+    }
+
+    string getType() {
+        return type;
+    }
+
+    double getAmount() {
+        return amount;
+    }
+};
+
+class Account {
+private:
+    string userId;
+    string pin;
+    double balance;
+    vector<Transaction> transactionHistory;
+
+public:
+    Account(string userId, string pin, double balance) {
+        this->userId = userId;
+        this->pin = pin;
+        this->balance = balance;
+    }
+
+    bool authenticate(string enteredPin) {
+        return (enteredPin == pin);
+    }
+
+    double getBalance() {
+        return balance;
+    }
+
+    void deposit(double amount) {
+        balance += amount;
+        Transaction depositTransaction("Deposit", amount);
+        transactionHistory.push_back(depositTransaction);
+    }
+
+    void withdraw(double amount) {
+        if (balance >= amount) {
+            balance -= amount;
+            Transaction withdrawTransaction("Withdraw", amount);
+            transactionHistory.push_back(withdrawTransaction);
+        } else {
+            cout << "Insufficient balance." << endl;
+        }
+    }
+
+    void transfer(Account& receiverAccount, double amount) {
+        if (balance >= amount) {
+            balance -= amount;
+            receiverAccount.deposit(amount);
+            Transaction transferTransaction("Transfer", amount);
+            transactionHistory.push_back(transferTransaction);
+        } else {
+            cout << "Insufficient balance." << endl;
+        }
+    }
+
+    void displayTransactionHistory() {
+        cout << "----- Transaction History -----" << endl;
+        for ( Transaction& transaction : transactionHistory) {
+            cout << "Type: " << transaction.getType() << endl;
+            cout << "Amount: " << transaction.getAmount() << endl;
+            cout << "-----------------------------" << endl;
+        }
+    }
+};
+
+int main() {
+    Account acc("ABCD45", "7112", 500000.0);
+
+    string enteredUserId, enteredPin;
+    cout << "Enter User ID: ";
+    cin >> enteredUserId;
+    cout << "Enter PIN: ";
+    cin >> enteredPin;
+
+    if (acc.authenticate(enteredPin)) {
+        cout << "Authentication successful." << endl;
+
+        int choice;
+        double amount;
+        string receiverUserId;
+
+        while (true) {
+            cout << "----- ATM Menu -----" << endl;
+            cout << "1. Transactions History" << endl;
+            cout << "2. Withdraw" << endl;
+            cout << "3. Deposit" << endl;
+            cout << "4. Transfer" << endl;
+            cout << "5. Quit" << endl;
+            cout << "Enter your choice: ";
+            cin >> choice;
+
+            switch (choice) {
+                case 1:
+                    acc.displayTransactionHistory();
+                    break;
+
+                case 2:
+                    cout << "Enter amount to withdraw: ";
+                    cin >> amount;
+                    acc.withdraw(amount);
+                    break;
+
+                case 3:
+                    cout << "Enter amount to deposit: ";
+                    cin >> amount;
+                    acc.deposit(amount);
+                    break;
+
+                case 4:
+                    cout << "Enter receiver's User ID: ";
+                    cin >> receiverUserId;
+                    cout << "Enter amount to transfer: ";
+                    cin >> amount;
+ 
+                    break;
+
+                case 5:
+                    cout << "Thank you for using the ATM. Goodbye!" << endl;
+                    return 0;
+
+                default:
+                    cout << "Invalid choice. Please try again." << endl;
+            }
+        }
+    } else {
+        cout << "Authentication failed. Invalid User ID or PIN." << endl;
+    }
+
+    return 0;
+}
